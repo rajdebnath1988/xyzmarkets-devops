@@ -50,7 +50,7 @@ jobs:
 
       # Build Docker Image
       - name: Build Docker Image
-        run: docker build -t $IMAGE_NAME docker/
+        run: docker build -t $IMAGE_NAME -f docker/Dockerfile .
 
       # Trivy Container Security Scan
       - name: Trivy Security Scan (Fail on HIGH/CRITICAL)
