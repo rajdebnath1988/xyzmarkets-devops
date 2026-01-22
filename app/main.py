@@ -2,10 +2,10 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
+@app.get("/")
+def root():
+    return {"status": "xyzMarkets Trading API Running"}
+
 @app.get("/health")
 def health():
-    return {"status": "ok"}
-
-@app.get("/price")
-def price():
-    return {"symbol": "EURUSD", "price": 1.1023}
+    return {"health": "ok"}
