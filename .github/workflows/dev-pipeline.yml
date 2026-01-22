@@ -8,7 +8,7 @@ env:
   AWS_REGION: ap-south-1
   ECR_REGISTRY: 279606006025.dkr.ecr.ap-south-1.amazonaws.com
   IMAGE_NAME: xyzmarkets-dev
-  CLUSTER_NAME: xyzmarkets-dev
+  CLUSTER_NAME: xyzmarkets-eks-dev
 
 jobs:
   build-secure-deploy:
