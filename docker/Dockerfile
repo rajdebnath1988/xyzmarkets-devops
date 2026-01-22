@@ -1,14 +1,19 @@
-FROM python:3.11-alpine3.19
+FROM python:3.11-alpine
+
+# Create non-root user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 WORKDIR /app
 
-# Install dependencies first for caching
 COPY requirements.txt .
-RUN pip install --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy app after deps
 COPY app/main.py .
+
+# Change ownership
+RUN chown -R appuser:appgroup /app
+
+USER appuser
 
 EXPOSE 8000
 
