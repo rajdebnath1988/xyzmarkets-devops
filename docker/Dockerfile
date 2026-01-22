@@ -6,8 +6,4 @@ COPY app/main.py .
 
 RUN pip install fastapi uvicorn
 
-EXPOSE 8000
-
-USER nobody
-
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
