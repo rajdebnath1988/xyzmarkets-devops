@@ -1,0 +1,82 @@
+name: DEV DevSecOps Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  AWS_REGION: ap-south-1
+  ECR_REGISTRY: 279606006025.dkr.ecr.ap-south-1.amazonaws.com
+  IMAGE_NAME: xyzmarkets-dev
+  CLUSTER_NAME: xyzmarkets-dev
+
+jobs:
+  build-secure-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # AWS Authentication
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # SonarQube SAST Scan
+      - name: SonarQube Scan (SAST)
+        uses: SonarSource/sonarqube-scan-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      # Enforce SonarQube Quality Gate
+      - name: SonarQube Quality Gate Check
+        uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # Login to Amazon ECR
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION \
+          | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+      # Build Docker Image
+      - name: Build Docker Image
+        run: docker build -t $IMAGE_NAME docker/
+
+      # Trivy Container Security Scan
+      - name: Trivy Security Scan (Fail on HIGH/CRITICAL)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: $IMAGE_NAME
+          severity: HIGH,CRITICAL
+          exit-code: 1
+
+      # Push Image to AWS ECR
+      - name: Push Docker Image to ECR
+        run: |
+          docker tag $IMAGE_NAME:latest $ECR_REGISTRY/$IMAGE_NAME:dev
+          docker push $ECR_REGISTRY/$IMAGE_NAME:dev
+
+      # Configure kubectl for EKS
+      - name: Configure kubectl
+        run: aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_REGION
+
+      # Helm Deploy to DEV Cluster
+      - name: Helm Deploy DEV
+        run: |
+          helm upgrade --install xyzmarkets helm/xyzmarkets \
+          -f helm/xyzmarkets/values-dev.yaml \
+          --wait --timeout 5m
+
+      # OWASP ZAP Dynamic Security Scan
+      - name: OWASP ZAP DAST Scan
+        uses: zaproxy/action-full-scan@v0.8.0
+        with:
+          target: http://dev.xyzmarkets.local
