@@ -1,6 +1,31 @@
 apiVersion: v2
 name: xyzmarkets
-description: Helm chart for xyzMarkets Trading API
+description: Helm chart for xyzMarkets Trading API (DevSecOps Managed)
 type: application
-version: 0.1.0
-appVersion: "1.0"
+
+# Helm chart version (chart change tracking)
+version: 0.1.1
+
+# Application version (container version)
+appVersion: "1.0.0"
+
+maintainers:
+  - name: Raj Debnath
+    role: DevOps Engineer
+    email: devops@xyzmarkets.com
+
+keywords:
+  - fintech
+  - trading
+  - api
+  - devsecops
+  - kubernetes
+
+home: https://xyzmarkets.com
+sources:
+  - https://github.com/xyzmarkets/xyzmarkets-devops
+
+annotations:
+  audit.owner: "DevOps Team"
+  audit.environment: "DEV"
+  compliance: "ISO27001-NIST"
