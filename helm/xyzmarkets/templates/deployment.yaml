@@ -14,10 +14,18 @@ spec:
       labels:
         app.kubernetes.io/name: {{ .Release.Name }}
     spec:
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+
       containers:
         - name: api
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: Always
+
           ports:
             - containerPort: {{ .Values.service.targetPort }}
 
@@ -44,6 +52,22 @@ spec:
             periodSeconds: 20
 
           securityContext:
-            runAsNonRoot: true
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: TMPDIR
+              value: /tmp
+
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}
