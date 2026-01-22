@@ -4,11 +4,10 @@ uvicorn[standard]==0.29.0
 pydantic==2.6.4
 requests==2.31.0
 
-# Security / Packaging fixes
-wheel>=0.46.2
-setuptools>=70.0.0
-
-# Optional (logging / tracing readiness)
-python-json-logger==2.0.7
-
+# Security fixes (Trivy HIGH remediation)
+starlette>=0.40.0
 jaraco.context>=6.1.0
+wheel>=0.46.2
+
+# Logging / Observability (Optional)
+python-json-logger==2.0.7
